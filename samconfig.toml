@@ -19,11 +19,7 @@ resolve_s3 = true
 s3_prefix = "slite-backend"
 region = "eu-west-2"
 disable_rollback = false
-parameter_overrides = [
-  "DatabaseName=slitedb",
-  "DatabaseUsername=postgres",
-  "DatabasePassword=TempPassword123!"
-]
+# No parameters needed for mock implementation
 
 [default.package.parameters]
 resolve_s3 = true

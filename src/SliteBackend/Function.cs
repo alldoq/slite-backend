@@ -25,10 +25,10 @@ public class Function
 
         var services = new ServiceCollection();
         services.AddSingleton<IConfiguration>(configuration);
-        services.AddDatabase(configuration);
-        services.AddScoped<IUserService, UserService>();
-        services.AddScoped<ICompanyService, CompanyService>();
-        services.AddScoped<IServiceService, ServiceService>();
+        // Use mock services instead of database services
+        services.AddScoped<IUserService, MockUserService>();
+        services.AddScoped<ICompanyService, MockCompanyService>();
+        services.AddScoped<IServiceService, MockServiceService>();
 
         _serviceProvider = services.BuildServiceProvider();
         
@@ -47,8 +47,8 @@ public class Function
 
     private async Task InitializeDatabaseIfNeeded(IServiceScope scope)
     {
-        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        await DatabaseConfiguration.InitializeDatabaseAsync(dbContext);
+        // Skip database initialization for now - using mock data
+        await Task.CompletedTask;
     }
 
     public async Task<APIGatewayProxyResponse> FunctionHandler(APIGatewayProxyRequest apigProxyEvent, ILambdaContext context)
