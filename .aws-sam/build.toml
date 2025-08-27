@@ -5,6 +5,7 @@ codeuri = "/Users/marcinwalczak/Kod/slite-backend/slite-backend/src/SliteBackend
 runtime = "dotnet8"
 architecture = "x86_64"
 handler = "SliteBackend::SliteBackend.Function::FunctionHandler"
+source_hash = "9f8049d8e6e5a7a93a4aa4cc2f2d585ef12b2830712ee96780ca3b42476b17b4"
 manifest_hash = ""
 packagetype = "Zip"
 functions = ["SliteBackendFunction"]
