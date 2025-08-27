@@ -32,11 +32,8 @@ public class Function
 
         _serviceProvider = services.BuildServiceProvider();
         
-        using (var scope = _serviceProvider.CreateScope())
-        {
-            var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-            DatabaseConfiguration.InitializeDatabaseAsync(dbContext).GetAwaiter().GetResult();
-        }
+        // Only initialize database for database-dependent endpoints
+        // Database initialization moved to on-demand basis
     }
 
     private static async Task<string> GetCallingIP()
@@ -48,21 +45,35 @@ public class Function
         return msg.Replace("\n","");
     }
 
+    private async Task InitializeDatabaseIfNeeded(IServiceScope scope)
+    {
+        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        await DatabaseConfiguration.InitializeDatabaseAsync(dbContext);
+    }
+
     public async Task<APIGatewayProxyResponse> FunctionHandler(APIGatewayProxyRequest apigProxyEvent, ILambdaContext context)
     {
         try
         {
+            var path = apigProxyEvent.Path;
+            var method = apigProxyEvent.HttpMethod;
+
+            // Handle hello endpoint without database
+            if (method.ToUpper() == "GET" && path == "/hello")
+            {
+                return await HandleHelloAsync();
+            }
+
+            // For database-dependent endpoints, initialize database and services
             using var scope = _serviceProvider.CreateScope();
+            await InitializeDatabaseIfNeeded(scope);
+
             var userService = scope.ServiceProvider.GetRequiredService<IUserService>();
             var companyService = scope.ServiceProvider.GetRequiredService<ICompanyService>();
             var serviceService = scope.ServiceProvider.GetRequiredService<IServiceService>();
 
-            var path = apigProxyEvent.Path;
-            var method = apigProxyEvent.HttpMethod;
-
             return method.ToUpper() switch
             {
-                "GET" when path == "/hello" => await HandleHelloAsync(),
                 "GET" when path == "/users" => await HandleGetUsersAsync(userService),
                 "POST" when path == "/users" => await HandleCreateUserAsync(userService, apigProxyEvent.Body),
                 "GET" when path == "/companies" => await HandleGetCompaniesAsync(companyService),

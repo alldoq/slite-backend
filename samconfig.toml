@@ -20,11 +20,9 @@ s3_prefix = "slite-backend"
 region = "eu-west-2"
 disable_rollback = false
 parameter_overrides = [
-  "DatabaseHost=localhost",
-  "DatabasePort=5432", 
   "DatabaseName=slitedb",
   "DatabaseUsername=postgres",
-  "DatabasePassword=password"
+  "DatabasePassword=TempPassword123!"
 ]
 
 [default.package.parameters]
