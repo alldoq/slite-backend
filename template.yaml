@@ -1,0 +1,113 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Sample SAM Template for slite-backend
+
+Parameters:
+  DatabaseHost:
+    Type: String
+    Default: localhost
+    Description: Database host
+  DatabasePort:
+    Type: String
+    Default: "5432"
+    Description: Database port
+  DatabaseName:
+    Type: String
+    Default: slitedb
+    Description: Database name
+  DatabaseUsername:
+    Type: String
+    Default: postgres
+    Description: Database username
+  DatabasePassword:
+    Type: String
+    NoEcho: true
+    Default: password
+    Description: Database password
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 10
+    MemorySize: 512
+
+    Tracing: Active
+    # You can add LoggingConfig parameters such as the Logformat, Log Group, and SystemLogLevel or ApplicationLogLevel. Learn more here https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-function.html#sam-function-loggingconfig.
+    LoggingConfig:
+      LogFormat: JSON
+  Api:
+    TracingEnabled: true
+Resources:
+  SliteBackendFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: ./src/SliteBackend/
+      Handler: SliteBackend::SliteBackend.Function::FunctionHandler
+      Runtime: dotnet8
+      Architectures:
+      - x86_64
+      MemorySize: 512
+      Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
+        Variables:
+          DB_HOST: !Ref DatabaseHost
+          DB_PORT: !Ref DatabasePort
+          DB_NAME: !Ref DatabaseName
+          DB_USERNAME: !Ref DatabaseUsername
+          DB_PASSWORD: !Ref DatabasePassword
+      Events:
+        Hello:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /hello
+            Method: get
+        Users:
+          Type: Api
+          Properties:
+            Path: /users
+            Method: get
+        CreateUser:
+          Type: Api
+          Properties:
+            Path: /users
+            Method: post
+        Companies:
+          Type: Api
+          Properties:
+            Path: /companies
+            Method: get
+        CreateCompany:
+          Type: Api
+          Properties:
+            Path: /companies
+            Method: post
+        Services:
+          Type: Api
+          Properties:
+            Path: /services
+            Method: get
+        CreateService:
+          Type: Api
+          Properties:
+            Path: /services
+            Method: post
+        CompanyServices:
+          Type: Api
+          Properties:
+            Path: /companies/{companyId}/services
+            Method: get
+
+Outputs:
+  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
+  # Find out more about other implicit resources you can reference within SAM
+  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
+  SliteBackendApi:
+    Description: API Gateway endpoint URL for Prod stage for SliteBackend 
+      function
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
+  SliteBackendFunction:
+    Description: SliteBackend Lambda Function ARN
+    Value: !GetAtt SliteBackendFunction.Arn
+  SliteBackendFunctionIamRole:
+    Description: Implicit IAM Role created for SliteBackend function
+    Value: !GetAtt SliteBackendFunctionRole.Arn
